@@ -7,6 +7,7 @@ const router = Router();
 const jwt = require("jsonwebtoken");
 const cron = require("node-cron");
 const moment = require("moment-timezone");
+require("dotenv").config();
 
 
 cron.schedule('0 0 * * *', async () => {
@@ -163,13 +164,13 @@ router.post("/list/:id", userMiddleware, async (req, res) => {
             _id: id
         })
 
-        const accountSid = 'ACd6702083ff72a4a2214750ce8091c0b3';
-        const authToken = 'ed283acb32956af35729346646a282ea';
+        const accountSid = process.env.Accountsid;
+        const authToken = process.env.Accounttoken;
         const client = require('twilio')(accountSid, authToken);
 
         const sendSMS=async(body)=>{
             let msg={
-                from:'+12246287416',
+                from:process.env.from,
                 to:'+91'+reciever.phone_number,
                 body,
             };

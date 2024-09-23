@@ -1,6 +1,6 @@
 # prod
 dist/
-config.js
+
 # dev
 .yarn/
 !.yarn/releases
