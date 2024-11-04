@@ -2,21 +2,29 @@ const jwt=require("jsonwebtoken");
 const {JWT_SECRET}=require("../config");
 
 
-function userMiddleware(req, res, next) {
-    const jwtToken=req.headers.authorization;
+async function userMiddleware(req, res, next) {
+    // console.log(jwtToken)
     try{
-        const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
-        if(decodedValue.phone_number){
-            next();
+        const jwtToken=req.header("authorization")||"";
+        // console.log(jwtToken);
+        if(!jwtToken){
+            res.json({err:"unauthorized"})
         }
         else{
-            res.status(403).json({
-                msg:"user not found."
-            })
+            const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+            // console.log(decodedValue)
+            if(!decodedValue.phone_number){
+                console.log("yes")
+            }
+            else{
+                req.phone_number=decodedValue.phone_number
+                await next();
+            }
         }
     }catch(e){
+        console.log(e)
         res.json({
-            msg:"incorrect input.",
+            // msg:"incorrect input.",
             e
         })
     }

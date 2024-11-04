@@ -46,7 +46,7 @@ router.get('/list', userMiddleware, async (req, res) => {
 })
 
 router.put('/changestatus',userMiddleware,async (req,res)=>{
-    
+    console.log("cs")
     const jwtToken=req.headers.authorization;
     const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
     const phone=decodedValue.phone_number;
@@ -75,7 +75,6 @@ router.put('/changestatus',userMiddleware,async (req,res)=>{
         const updated_user=await Worker.findOne({
             phone_number:phone
         })
-
         res.json({
             updated_user
         })
@@ -85,7 +84,7 @@ router.put('/changestatus',userMiddleware,async (req,res)=>{
         })
     }
 })
-router.get('/notification',userMiddleware,async(req,res)=>{
+router.get('/notification',async(req,res)=>{
     const jwtToken=req.headers.authorization;
     const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
     const phone=decodedValue.phone_number;
@@ -95,6 +94,33 @@ router.get('/notification',userMiddleware,async(req,res)=>{
         })
 
         const msg=user.notification;
+        // console.log(msg)
+        res.json({
+            msg
+        })
+    }catch(e){
+        res.status(400).json({e})
+        console.log(e)
+    }
+})
+
+
+
+
+router.get('/status',async(req,res)=>{
+    const jwtToken=req.headers.authorization;
+    const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+    const phone=decodedValue.phone_number;
+
+    // const phone=await req.body.phone_number
+    // console.log(phone)
+    try{
+        const user=await Worker.findOne({
+            phone_number:phone
+        })
+
+        const msg=user.status;
+        // console.log(user)
         res.json({
             msg
         })
@@ -123,17 +149,46 @@ router.get('/profile',userMiddleware,async (req,res)=>{
     }
 })
 
+// router.use("/list/:id",async(req,res,next)=>{
+//     try{
+//         const jwtToken=req.header("authorization")||"";
+//         // console.log(jwtToken);
+//         if(!jwtToken){
+//             res.json({err:"unauthorized"})
+//         }
+//         else{
+//             const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+//             // console.log(decodedValue)
+//             if(!decodedValue.phone_number){
+//                 console.log("yes")
+//             }
+//             else{
+//                 req.phone_number=decodedValue.phone_number
+//                 await next();
+//             }
+//         }
+//     }catch(e){
+//         console.log(e)
+//         res.json({
+//             // msg:"incorrect input.",
+//             e
+//         })
+//     }
+// })
 
 
-router.post("/list/:id", userMiddleware, async (req, res) => {
-    const jwtToken = req.headers.authorization;
-    const decodedValue = jwt.verify(jwtToken, JWT_SECRET);
-    const phone = decodedValue.phone_number;
+router.post("/list/:id", async (req, res) => {
+    console.log("hi")
+    const body=await req.body;
+    const phone=body.phone_number;
+    console.log(phone);
 
     try {
         const sender = await Worker.findOne({
             phone_number: phone
         })
+
+        console.log(phone)
         const id = req.params.id;
 
         const new_notification = {
@@ -141,11 +196,9 @@ router.post("/list/:id", userMiddleware, async (req, res) => {
             sendernum: sender.phone_number,
             senderadd: sender.address
         }
-
         const reciever = await Worker.findOne({
             _id: id
         })
-
         const accountSid = process.env.Accountsid;
         const authToken = process.env.Accounttoken;
         const client = require('twilio')(accountSid, authToken);
@@ -164,20 +217,13 @@ router.post("/list/:id", userMiddleware, async (req, res) => {
                 console.log(e)
             }
         }; 
-        
         sendSMS('You recieved a notification in ConnectU');
-
-
         await Worker.updateOne({
             _id: id
         }, { $push: { notification: new_notification } })
         res.json({
             msg: "done"
         })
-
-
-
-
     } catch (e) {
         res.status(400).json({ e })
     }
@@ -185,16 +231,21 @@ router.post("/list/:id", userMiddleware, async (req, res) => {
 
 
 
-router.post('/notification/:id', userMiddleware,async(req,res)=>{
+router.post('/notification/:id',async(req,res)=>{
     const msgid=req.params.id;
-    const jwtToken=req.headers.authorization;
-    const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
-    const phone=decodedValue.phone_number;
+    // const jwtToken=req.headers.authorization;
+    // const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+    // const phone=decodedValue.phone_number;
+    const phone=await req.body.phone_number
     try{
         const user=await Worker.findOne({
             phone_number:phone
         })
+        const id=await Worker.findOne({
+            phone_number:phone
+        })
         let msg={};
+
         user.notification.forEach(element => {
             if(element._id==msgid){
                 msg= element
@@ -202,6 +253,7 @@ router.post('/notification/:id', userMiddleware,async(req,res)=>{
         });
         console.log(msg)
         const sendernum=msg.sendernum
+        console.log(sendernum)
 
         await Worker.updateOne({
             phone_number:phone,
@@ -211,11 +263,15 @@ router.post('/notification/:id', userMiddleware,async(req,res)=>{
             }
         })
 
+        await Worker.updateOne({
+            _id:id
+        }, { $pull: { notification: msg } })
+
         const new_notification={
             recievername:user.name,
             reciever_num:phone
         }
-        // console.log(new_notification)
+        console.log(new_notification)
 
         const accountSid = process.env.Accountsid;
         const authToken = process.env.Accounttoken;
@@ -235,8 +291,8 @@ router.post('/notification/:id', userMiddleware,async(req,res)=>{
                 console.log(e)
             }
         }; 
+        sendSMS(`${user.name} accept your job.This is his phone number ${user.phone_number} feel free to contact him.`);
         
-        sendSMS('You recieved a notification in ConnectU');
 
 
         await Client.updateOne({
@@ -245,14 +301,12 @@ router.post('/notification/:id', userMiddleware,async(req,res)=>{
         res.json({
             msg: "done"
         })
-
-
     }catch(e){
         res.status(400).json({e})
     }
-
-
 })
+
+
 
 
 
@@ -261,7 +315,7 @@ router.post('/notification/:id', userMiddleware,async(req,res)=>{
 router.post('/signup', async (req, res) => {
     const body = await req.body;
     const { success } = workersignupInput.safeParse(body);
-    // console.log(body);
+    console.log(body);
     if (!success) {
         res.status(400).json({ error: "invalid input" });
     }
@@ -304,7 +358,7 @@ router.post('/signup', async (req, res) => {
                     phone_number,
                     Worker: true
                 }, JWT_SECRET);
-
+                // console.log(token);
                 res.json({
                     token
                 })
@@ -312,37 +366,6 @@ router.post('/signup', async (req, res) => {
         } catch (e) {
             res.json({
                 e
-            })
-        }
-    }
-});
-
-router.post('/signin', async (req, res) => {
-    const body = await req.body;
-    const { success } = signinInput.safeParse(body);
-    if (!success) {
-        res.status(400).json({ error: "invalid input" });
-    }
-
-    else {
-        const phone_number = req.body.phone_number;
-        const password = req.body.password;
-
-        const user = await Worker.find({
-            phone_number,
-            password
-        })
-        if (user) {
-            const token = jwt.sign({
-                phone_number
-            }, JWT_SECRET);
-
-            res.json({
-                token
-            })
-        } else {
-            res.status(411).json({
-                message: "Incorrect phone_number and pass"
             })
         }
     }
