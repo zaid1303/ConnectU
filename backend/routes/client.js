@@ -129,19 +129,21 @@ router.post("/list/:id", async (req, res) => {
         const sender = await Client.findOne({
             phone_number: phone
         })
-        console.log(sender)
+        // console.log(sender)
         const id = req.params.id;
 
         const new_notification = {
             sendername: sender.name,
             sendernum: sender.phone_number,
-            senderadd: sender.address
+            senderadd: sender.address,
+            senderrat: sender.rating
         }
+        console.log(new_notification)
 
         const reciever = await Worker.findOne({
             _id: id
         })
-        console.log(reciever)
+        // console.log(reciever)
 
         const accountSid = process.env.Accountsid;
         const authToken = process.env.Accounttoken;

@@ -11,6 +11,7 @@ import {WList} from "./pages/Worker/WList"
 import {WNotification} from "./pages/Worker/WNotification"
 // import {WProfile} from "./pages/Worker/WProfile"
 import {WSignup} from "./pages/Worker/WSignup"
+import { WFeedback } from './pages/Worker/WFeedback'
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
             <Route path='/worker/signup' element={<WSignup/>}></Route>
             <Route path='/worker/notification' element={<WNotification/>}></Route>
             <Route path='/worker/list' element={<WList/>}></Route>
+            <Route path='/worker/feedback' element={<WFeedback/>}></Route>
             {/* <Route path='/worker/profile' element={<WProfile/>}></Route> */}
           </Routes>
         </BrowserRouter>

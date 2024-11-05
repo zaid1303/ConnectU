@@ -107,6 +107,60 @@ router.get('/notification',async(req,res)=>{
 
 
 
+router.get('/feedback',async(req,res)=>{
+    const jwtToken=req.headers.authorization;
+    const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+    const phone=decodedValue.phone_number;
+    try{
+        const user=await Worker.findOne({
+            phone_number:phone
+        })
+
+        const msg=user.feedback;
+        // console.log(msg)
+        res.json({
+            msg
+        })
+    }catch(e){
+        res.status(400).json({e})
+        console.log(e)
+    }
+})
+
+
+router.post('/feedback/:id',async(req,res)=>{
+    const msgid=req.params.id;
+    const phone=await req.body.phone_number
+    const cphone=await req.body.sendernum
+    const rat=await req.body.rating
+    try{
+        const user = await Worker.findOne({
+            phone_number:phone
+        })
+        const id=await Worker.findOne({
+            phone_number:phone
+        })
+        let msg={}
+        user.feedback.forEach(e=>{
+            if(e._id==msgid){
+                msg=e
+            }
+        })
+        await Worker.updateOne({
+            _id:id
+        },{$pull:{feedback:msg}})
+        await Client.updateOne({
+            phone_number:cphone
+        },{$set:{rating:rat}})
+
+    }catch(e){
+        res.status(400).json({e})
+    }
+})
+
+
+
+
 router.get('/status',async(req,res)=>{
     const jwtToken=req.headers.authorization;
     const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
@@ -253,6 +307,7 @@ router.post('/notification/:id',async(req,res)=>{
         });
         console.log(msg)
         const sendernum=msg.sendernum
+        const sendername=msg.sendername
         console.log(sendernum)
 
         await Worker.updateOne({
@@ -270,6 +325,10 @@ router.post('/notification/:id',async(req,res)=>{
         const new_notification={
             recievername:user.name,
             reciever_num:phone
+        }
+        const new_feedback={
+            sendername:sendername,
+            sendernum:sendernum
         }
         console.log(new_notification)
 
@@ -298,9 +357,69 @@ router.post('/notification/:id',async(req,res)=>{
         await Client.updateOne({
             phone_number:sendernum
         },{$push:{notification:new_notification}})
+
+        await Worker.updateOne({
+            _id:id
+        },{$push:{feedback:new_feedback}})
+
         res.json({
             msg: "done"
         })
+    }catch(e){
+        res.status(400).json({e})
+    }
+})
+
+
+
+router.post('/notification/reject/:id',async(req,res)=>{
+    const msgid=req.params.id;
+    // const jwtToken=req.headers.authorization;
+    // const decodedValue=jwt.verify(jwtToken,JWT_SECRET);
+    // const phone=decodedValue.phone_number;
+    const phone=await req.body.phone_number
+    try{
+        const user=await Worker.findOne({
+            phone_number:phone
+        })
+        const id=await Worker.findOne({
+            phone_number:phone
+        })
+        let msg={};
+
+        user.notification.forEach(element => {
+            if(element._id==msgid){
+                msg= element
+            }
+        });
+        console.log(msg)
+        const sendernum=msg.sendernum
+        console.log(sendernum)
+
+        await Worker.updateOne({
+            _id:id
+        }, { $pull: { notification: msg } })
+
+        const accountSid = process.env.Accountsid;
+        const authToken = process.env.Accounttoken;
+        const client = require('twilio')(accountSid, authToken);
+
+        const sendSMS=async(body)=>{
+            let msg={
+                from:process.env.from,
+                to:'+91'+sendernum,
+                body,
+            };
+            try{
+                const message=await client.messages.create(msg);
+                console.log(message);
+            }
+            catch(e){
+                console.log(e)
+            }
+        }; 
+        sendSMS(`${user.name} don't accept your job.So try to connect to the other workers.`);
+        
     }catch(e){
         res.status(400).json({e})
     }

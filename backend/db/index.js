@@ -6,6 +6,7 @@ const ClientSchema = new mongoose.Schema({
     phone_number:String,
     password:String,
     address:String,
+    rating:String,
     notification:[{
         recievername:String,
         reciever_num:String
@@ -22,10 +23,16 @@ const WorkerSchema = new mongoose.Schema({
     charge_by_hours:Number,
     rating:String,
     status:Boolean,
+    distance:String,
     notification:[{
         sendername:String,
         sendernum:String,
-        senderadd:String
+        senderadd:String,
+        senderrat:String
+    }],
+    feedback:[{
+        sendername:String,
+        sendernum:String
     }]
 });
 

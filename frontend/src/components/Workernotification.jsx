@@ -15,7 +15,8 @@ export const Workernotification = ({
     id,
     sendername,
     sendernum,
-    senderadd
+    senderadd,
+    senderrat
 }) => {
     const navigate = useNavigate();
     const phone_number = jwtDecode(localStorage.getItem("token")).phone_number;
@@ -32,14 +33,25 @@ export const Workernotification = ({
             </div>
             {/* {console.log(id)} */}
             <div>
-                <button type="submit" className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" onClick={async () => {
+                <button type="submit" className="text-gray-900 bg-red border border-gray-300 focus:outline-none hover:bg-red-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:text-white dark:border-gray-600 dark:hover:bg-red-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" onClick={async () => {
+                    // {console.log(jwtDecode(localStorage.getItem("token")).phone_number)}
+                    const response = await axios.post(`${BACKEND_URL}/api/v1/worker/notification/reject/${id}`, data, {
+                        headers: {
+                            Authorization: localStorage.getItem("token")
+                        }
+                    });
+                    if (response) {
+                        navigate(`/worker`)
+                    }
+                }}>Reject</button>
+                <button type="submit" className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-800 dark:text-white dark:border-gray-600 dark:hover:bg-green-700 dark:hover:border-gray-600 dark:focus:ring-gray-700" onClick={async () => {
                     // {console.log(jwtDecode(localStorage.getItem("token")).phone_number)}
                     const response = await axios.post(`${BACKEND_URL}/api/v1/worker/notification/${id}`, data, {
                         headers: {
                             Authorization: localStorage.getItem("token")
                         }
                     });
-                    if(response){
+                    if (response) {
                         navigate(`/worker`)
                     }
                 }}>Accept</button>
@@ -51,7 +63,10 @@ export const Workernotification = ({
                     {`Number: ${sendernum}`}
                 </div>
                 <div className="text-slate-950 text-sm font-bold pt-2">
-                    {`Sender Address: ${senderadd}`}
+                    {`Client Address: ${senderadd}`}
+                </div>
+                <div className="text-slate-950 text-sm font-bold pt-2">
+                    {`Client Rating : ${senderrat}`}
                 </div>
             </div>
 

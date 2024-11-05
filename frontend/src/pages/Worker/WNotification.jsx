@@ -20,6 +20,7 @@ export const WNotification = () => {
                         sendername={msg.sendername}
                         sendernum={msg.sendernum}
                         senderadd={msg.senderadd}
+                        senderrat={msg.senderrat}
                     />)}
                 </div>
             </div>

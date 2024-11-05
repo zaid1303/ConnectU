@@ -88,3 +88,25 @@ export const workerNotification = () => {
         notification
     }
 }
+
+
+export const workerFeedback = () => {
+    const [loading, setloading] = useState(true);
+    const [feedback, setfeedback] = useState([]);
+
+    useEffect(() => {
+        axios.get(`${BACKEND_URL}/api/v1/worker/feedback`,{
+            headers:{
+                Authorization:localStorage.getItem("token")
+            }
+        }).then(responce => {
+            setfeedback(responce.data.msg);
+            setloading(false);
+        })
+    })
+
+    return {
+        loading,
+        feedback
+    }
+}

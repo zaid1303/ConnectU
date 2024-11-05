@@ -29,7 +29,8 @@ export const Workerlistcard = ({
     profession,
     charge_by_day,
     charge_by_hours,
-    rating
+    rating,
+    distance
 }) => {
     const navigate = useNavigate();
     const phone_number = jwtDecode(localStorage.getItem("token")).phone_number;
@@ -67,6 +68,9 @@ export const Workerlistcard = ({
                 </div>
                 <div className="text-slate-950 text-sm font-bold pt-2">
                     {`Charge Per hours: ${charge_by_hours}`}
+                </div>
+                <div className="text-slate-950 text-sm font-bold pt-2">
+                    {`Distance from you: ${distance}m`}
                 </div>
             </div>
             <div className='text-xl font-bold pt-2'>

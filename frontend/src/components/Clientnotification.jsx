@@ -7,6 +7,7 @@ import {
     Tooltip,
 } from '@mui/material';
 import profileImage from "../assets/client.webp";
+import chat from "../assets/chat.svg"
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -29,6 +30,9 @@ export const Clientnotification = ({
                     </Tooltip>
                     <div className="text-xl font-bold pt-2">
                         {recievername}
+                    </div>
+                    <div className="text-xl font-bold pt-2 ml-4">
+                        <a href='http://localhost:3002'><img src={chat}></img></a>
                     </div>
                 </div>
                 <div className="text-xl font-bold pt-2">
